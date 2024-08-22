@@ -5,12 +5,17 @@
   "type": "module",
   "scripts": {
     "start": "vite",
+    "dev": "vite",
     "build": "run-p type-check \"build-only {@}\" --",
     "preview": "vite preview",
     "build-only": "vite build",
     "type-check": "vue-tsc --build --force"
   },
   "dependencies": {
+    "@dfinity/agent": "^2.0.0",
+    "@dfinity/candid": "^2.0.0",
+    "@dfinity/identity": "^2.0.0",
+    "@dfinity/principal": "^2.0.0",
     "pinia": "^2.1.7",
     "vue": "^3.4.29",
     "vue-router": "^4.3.3"
