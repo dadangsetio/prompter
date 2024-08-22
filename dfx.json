@@ -1,0 +1,26 @@
+{
+  "canisters": {
+    "prompter_backend": {
+      "main": "src/prompter_backend/main.mo",
+      "type": "motoko"
+    },
+    "prompter_frontend": {
+      "dependencies": [
+        "prompter_backend"
+      ],
+      "source": [
+        "src/prompter_frontend/dist"
+      ],
+      "type": "assets",
+      "workspace": "prompter_frontend"
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "output_env_file": ".env",
+  "version": 1
+}
