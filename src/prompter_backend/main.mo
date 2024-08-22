@@ -57,7 +57,6 @@ actor ChatBot {
     };
     topics.put(topicCounter, newTopic);
 
-    // Menambahkan topik ke data pengguna
     switch (users.get(caller)) {
       case (null) {
         users.put(caller, { topics = [topicCounter] });
@@ -74,12 +73,11 @@ actor ChatBot {
   public shared(msg) func sendPrompt(topicId : Nat, prompt : Text) : async Text {
     let caller = msg.caller;
     
-    // Memeriksa apakah pengguna memiliki akses ke topik ini
     switch (users.get(caller)) {
-      case (null) { return "Pengguna tidak ditemukan."; };
+      case (null) { return "User not found."; };
       case (?userData) {
         switch (Array.find<Nat>(userData.topics, func (id: Nat) : Bool { id == topicId })) {
-          case (null) { return "Anda tidak memiliki akses ke topik ini."; };
+          case (null) { return "You don't have access to this topic."; };
           case (_) { };
         };
       };
@@ -114,7 +112,7 @@ actor ChatBot {
       let response = await ic.http_request(request);
 
       switch (Text.decodeUtf8(Blob.fromArray(response.body))) {
-        case (null) { "Gagal mendekode respons." };
+        case (null) { "Failed to decode response." };
         case (?responseText) {
           let decodedResponse = decodeResponse(responseText);
           let newRecord : ChatRecord = {
@@ -123,7 +121,7 @@ actor ChatBot {
           };
           
           switch (topics.get(topicId)) {
-            case (null) { "Topik tidak ditemukan." };
+            case (null) { "Topic not found." };
             case (?topic) {
               topic.messages.add(newRecord);
               topics.put(topicId, topic);
@@ -134,14 +132,13 @@ actor ChatBot {
       };
     } catch (error) {
       Debug.print("Error: " # Error.message(error));
-      "Terjadi kesalahan saat menghubungi API."
+      "An error occurred while contacting the API."
     };
   };
 
   public shared(msg) func getChatHistory(topicId : Nat) : async ?[ChatRecord] {
     let caller = msg.caller;
     
-    // Memeriksa apakah pengguna memiliki akses ke topik ini
     switch (users.get(caller)) {
       case (null) { return null; };
       case (?userData) {
@@ -200,11 +197,11 @@ actor ChatBot {
       case (#ok(jsonValue)) {
         let gptResponse : ?GPTResponse.ChatGPTResponse = from_candid(jsonValue);
         switch (gptResponse) {
-          case (null) { "Gagal mengonversi JSON ke tipe ChatGPTResponse." };
+          case (null) { "Failed to convert JSON to ChatGPTResponse type." };
           case (?response) {
             switch (response.choices[0].message.content) {
               case (?content) { content };
-              case (null) { "Tidak ada konten dalam respons." };
+              case (null) { "No content in the response." };
             };
           };
         };
