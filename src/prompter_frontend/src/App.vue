@@ -5,6 +5,10 @@ import Chat from "./components/Chat.vue";
 import Sidebar from "./components/Sidebar.vue";
 import { ref, onMounted, watch } from "vue";
 
+import { prompter_backend } from 'declarations/prompter_backend';
+
+const { sendPrompt } = prompter_backend;
+
 let query = ref([]);
 let response = ref([]);
 const question = ref("");
@@ -13,7 +17,7 @@ const loading = ref(false);
 const saveQuestions = ref([]);
 const isLight = ref(false);
 
-const getAnswer = async (message) => {
+const getAnswer1 = async (message) => {
   try {
     loading.value = true;
     wrapper.value.push({
@@ -24,6 +28,11 @@ const getAnswer = async (message) => {
       isAi: true,
       value: "|",
     });
+
+    // const getPromt = await sendPrompt(1, question.value);
+
+    // console.log(question.value);
+
     const res = await openai.createCompletion({
       model: "text-davinci-003",
       prompt: question.value,
@@ -31,6 +40,7 @@ const getAnswer = async (message) => {
       temperature: 0,
     });
     let data = res.data.choices[0].text;
+
     wrapper.value.pop();
     wrapper.value.push({
       isAi: true,
@@ -40,6 +50,7 @@ const getAnswer = async (message) => {
     let newquestions = wrapper.value.filter((item) => {
       return !item.isAi;
     });
+    
     localStorage.setItem("threads", JSON.stringify(newquestions));
     getQuestions();
   } catch ({ error }) {
@@ -60,6 +71,16 @@ const clearStorage = () => {
 onMounted(() => {
   getQuestions();
 });
+
+const getAnswer = async (message) => {
+
+  // const getPromt = await sendPrompt(1, question.value);
+  console.log(question.value);
+
+  const getPromt = await sendPrompt(1, question.value);
+
+  console.log(getPromt);
+};
 </script>
 
 <template>
