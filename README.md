@@ -50,6 +50,7 @@ To learn more before you start working with `prompter`, see the following docume
 - [SDK Developer Tools](https://internetcomputer.org/docs/current/developer-docs/setup/install)
 - [Motoko Programming Language Guide](https://internetcomputer.org/docs/current/motoko/main/motoko)
 - [Motoko Language Quick Reference](https://internetcomputer.org/docs/current/motoko/main/language-manual)
+- [Motoko Package Manager](https://mops.one)
 
 If you want to start working on your project right away, you might want to try the following commands:
 
@@ -68,6 +69,8 @@ If you want to test your project locally, you can use the following commands:
 dfx start --background
 
 # Deploys your canisters to the replica and generates your candid interface
+mops install
+dfx deps deploy
 dfx deploy
 ```
 
