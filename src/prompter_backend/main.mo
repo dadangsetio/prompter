@@ -14,7 +14,6 @@ import Int "mo:base/Int";
 import Secret "Env";
 import Principal "mo:base/Principal";
 import Array "mo:base/Array";
-import Option "mo:base/Option";
 
 actor ChatBot {
   type ChatRecord = {
@@ -22,7 +21,8 @@ actor ChatBot {
     response: Text;
   };
 
-  type Topic = {
+  type TopicNFT = {
+    owner: Principal;
     id: Nat;
     title: Text;
     messages: Buffer.Buffer<ChatRecord>;
@@ -39,8 +39,8 @@ actor ChatBot {
   };
 
   let ic : Types.IC = actor ("aaaaa-aa");
-  var topicCounter : Nat = 0;
-  let topics = HashMap.HashMap<Nat, Topic>(10, Nat.equal, hashNat);
+  var nftCounter : Nat = 0;
+  let nfts = HashMap.HashMap<Nat, TopicNFT>(10, Nat.equal, hashNat);
   let users = HashMap.HashMap<Principal, UserData>(10, Principal.equal, Principal.hash);
 
   public shared (msg) func whoami() : async Principal {
@@ -51,38 +51,97 @@ actor ChatBot {
     return "Halo dunia!";
   };
 
-  public shared(msg) func createTopic(title : Text) : async Nat {
+  public shared(msg) func createTopicNFT(title : Text) : async Nat {
     let caller = msg.caller;
-    topicCounter += 1;
-    let newTopic : Topic = {
-      id = topicCounter;
+    nftCounter += 1;
+    let newNFT : TopicNFT = {
+      owner = caller;
+      id = nftCounter;
       title = title;
       messages = Buffer.Buffer<ChatRecord>(0);
     };
-    topics.put(topicCounter, newTopic);
+    nfts.put(nftCounter, newNFT);
 
     switch (users.get(caller)) {
       case (null) {
-        users.put(caller, { topics = [topicCounter] });
+        users.put(caller, { topics = [nftCounter] });
       };
       case (?userData) {
-        let newTopics = Array.append(userData.topics, [topicCounter]);
+        let newTopics = Array.append(userData.topics, [nftCounter]);
         users.put(caller, { topics = newTopics });
       };
     };
 
-    topicCounter
+    nftCounter
   };
 
-  public shared(msg) func sendPrompt(topicId : Nat, prompt : Text) : async Text {
+  public query func getNFT(id: Nat) : async ?{
+    owner: Principal;
+    id: Nat;
+    title: Text;
+    messages: [ChatRecord];
+  } {
+    switch (nfts.get(id)) {
+      case (null) { null };
+      case (?nft) {
+        ?{
+          owner = nft.owner;
+          id = nft.id;
+          title = nft.title;
+          messages = Buffer.toArray(nft.messages);
+        }
+      };
+    }
+  };
+
+  public shared(msg) func transferNFT(id: Nat, to: Principal) : async Bool {
+    let caller = msg.caller;
+    switch (nfts.get(id)) {
+      case (null) { false };
+      case (?nft) {
+        if (nft.owner == caller) {
+          let updatedNFT : TopicNFT = {
+            owner = to;
+            id = nft.id;
+            title = nft.title;
+            messages = nft.messages;
+          };
+          nfts.put(id, updatedNFT);
+
+          switch (users.get(caller)) {
+            case (null) { };
+            case (?userData) {
+              let updatedTopics = Array.filter<Nat>(userData.topics, func (topicId: Nat) : Bool { topicId != id });
+              users.put(caller, { topics = updatedTopics });
+            };
+          };
+
+          switch (users.get(to)) {
+            case (null) {
+              users.put(to, { topics = [id] });
+            };
+            case (?userData) {
+              let newTopics = Array.append(userData.topics, [id]);
+              users.put(to, { topics = newTopics });
+            };
+          };
+
+          true
+        } else {
+          false
+        }
+      };
+    }
+  };
+
+  public shared(msg) func sendPrompt(nftId : Nat, prompt : Text) : async Text {
     let caller = msg.caller;
     
-    switch (users.get(caller)) {
-      case (null) { return "User not found."; };
-      case (?userData) {
-        switch (Array.find<Nat>(userData.topics, func (id: Nat) : Bool { id == topicId })) {
-          case (null) { return "You don't have access to this topic."; };
-          case (_) { };
+    switch (nfts.get(nftId)) {
+      case (null) { return "NFT not found."; };
+      case (?nft) {
+        if (nft.owner != caller) {
+          return "You don't own this NFT.";
         };
       };
     };
@@ -124,11 +183,11 @@ actor ChatBot {
             response = decodedResponse;
           };
           
-          switch (topics.get(topicId)) {
-            case (null) { "Topic not found." };
-            case (?topic) {
-              topic.messages.add(newRecord);
-              topics.put(topicId, topic);
+          switch (nfts.get(nftId)) {
+            case (null) { "NFT not found." };
+            case (?nft) {
+              nft.messages.add(newRecord);
+              nfts.put(nftId, nft);
               decodedResponse
             };
           };
@@ -140,25 +199,21 @@ actor ChatBot {
     };
   };
 
-  public shared(msg) func getChatHistory(topicId : Nat) : async ?[ChatRecord] {
+  public shared(msg) func getChatHistory(nftId : Nat) : async ?[ChatRecord] {
     let caller = msg.caller;
     
-    switch (users.get(caller)) {
+    switch (nfts.get(nftId)) {
       case (null) { return null; };
-      case (?userData) {
-        if (not Option.isSome(Array.find<Nat>(userData.topics, func (id: Nat) : Bool { id == topicId }))) {
+      case (?nft) {
+        if (nft.owner != caller) {
           return null;
         };
+        ?Buffer.toArray(nft.messages)
       };
-    };
-
-    switch (topics.get(topicId)) {
-      case (null) { null };
-      case (?topic) { ?Buffer.toArray(topic.messages) };
     };
   };
 
-  public shared(msg) func getUserTopics() : async [Nat] {
+  public shared(msg) func getUserNFTs() : async [Nat] {
     let caller = msg.caller;
     switch (users.get(caller)) {
       case (null) { [] };
@@ -167,10 +222,10 @@ actor ChatBot {
   };
 
   public query func getAllTopics() : async [(Nat, Text)] {
-    Iter.toArray(Iter.map<(Nat, Topic), (Nat, Text)>(
-      topics.entries(),
-      func ((id, topic) : (Nat, Topic)) : (Nat, Text) {
-        (id, topic.title)
+    Iter.toArray(Iter.map<(Nat, TopicNFT), (Nat, Text)>(
+      nfts.entries(),
+      func ((id, nft) : (Nat, TopicNFT)) : (Nat, Text) {
+        (id, nft.title)
       }
     ))
   };
