@@ -94,6 +94,11 @@ const getAnswer = async (message) => {
     wrapper.value.pop();
     wrapper.value.push({
       isAi: true,
+      value: "Hai..",
+    });
+    wrapper.value.pop();
+    wrapper.value.push({
+      isAi: true,
       value: getPromt,
     });
 
