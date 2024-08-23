@@ -47,6 +47,10 @@ actor ChatBot {
     msg.caller
   };
 
+  public func helloworld() : async Text {
+    return "Halo dunia!";
+  };
+
   public shared(msg) func createTopic(title : Text) : async Nat {
     let caller = msg.caller;
     topicCounter += 1;
