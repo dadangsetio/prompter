@@ -7,7 +7,6 @@ import { ref, onMounted, watch } from "vue";
 
 import { prompter_backend } from 'declarations/prompter_backend';
 
-const { sendPrompt } = prompter_backend;
 
 let query = ref([]);
 let response = ref([]);
@@ -88,9 +87,9 @@ const getAnswer = async (message) => {
   // const getPromt = await sendPrompt(1, question.value);
   console.log(question.value);
 
-  const getPromt = await sendPrompt(1, question.value);
+  const getPromt = await prompter_backend.sendPrompt(question.value);
   // rs.value = getPromt;
-
+  console.log(getPromt);
     wrapper.value.pop();
     wrapper.value.push({
       isAi: true,

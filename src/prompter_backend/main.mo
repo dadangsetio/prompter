@@ -134,10 +134,20 @@ actor ChatBot {
     }
   };
 
-  public shared(msg) func sendPrompt(nftId : Nat, prompt : Text) : async Text {
+  public shared(msg) func sendPrompt(prompt : Text) : async Text {
     let caller = msg.caller;
     
-    switch (nfts.get(nftId)) {
+    if (nfts.size() == 0) {
+      let newNFT : TopicNFT = {
+        owner = caller;
+        id = 1;
+        title = "Default Topic";
+        messages = Buffer.Buffer<ChatRecord>(0);
+      };
+      nfts.put(1, newNFT);
+    };
+
+    switch (nfts.get(1)) {
       case (null) { return "NFT not found."; };
       case (?nft) {
         if (nft.owner != caller) {
@@ -149,12 +159,14 @@ actor ChatBot {
     let apiKey = Secret.SECRET_GPT_KEY;
     let url = "https://api.openai.com/v1/chat/completions";
     
-    let requestHeaders = [
+     let requestHeaders = [
       { name = "Content-Type"; value = "application/json" },
       { name = "Authorization"; value = "Bearer " # apiKey }
     ];
 
-    let requestBody = "{\"model\": \"gpt-3.5-turbo\", \"messages\": [{\"role\": \"user\", \"content\": \"" # prompt # "\"}]}";
+    let cleanedPrompt = Text.trim(prompt, #char '\n');
+
+    let requestBody = "{\"model\": \"gpt-3.5-turbo\", \"messages\": [{\"role\": \"user\", \"content\": \"" # cleanedPrompt # "\"}]}";
 
     let transform_context : Types.TransformContext = {
       function = transform;
@@ -177,17 +189,17 @@ actor ChatBot {
       switch (Text.decodeUtf8(Blob.fromArray(response.body))) {
         case (null) { "Failed to decode response." };
         case (?responseText) {
-          let decodedResponse = decodeResponse(responseText);
+          let decodedResponse = _decodeResponse(responseText);
           let newRecord : ChatRecord = {
-            prompt = prompt;
+            prompt = cleanedPrompt;
             response = decodedResponse;
           };
           
-          switch (nfts.get(nftId)) {
+          switch (nfts.get(1)) {
             case (null) { "NFT not found." };
             case (?nft) {
               nft.messages.add(newRecord);
-              nfts.put(nftId, nft);
+              nfts.put(1, nft);
               decodedResponse
             };
           };
@@ -246,7 +258,7 @@ actor ChatBot {
     transformed;
   };
 
-  func decodeResponse(responseText : Text) : Text {
+  func _decodeResponse(responseText : Text) : Text {
     let parseResult = JSON.fromText(responseText, null);
     switch (parseResult) {
       case (#err(err)) {
