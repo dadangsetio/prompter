@@ -11,6 +11,8 @@ const { sendPrompt } = prompter_backend;
 
 let query = ref([]);
 let response = ref([]);
+
+let rs = ref();
 const question = ref("");
 const wrapper = ref([]);
 const loading = ref(false);
@@ -74,10 +76,37 @@ onMounted(() => {
 
 const getAnswer = async (message) => {
 
+  loading.value = true;
+    wrapper.value.push({
+      isAi: false,
+      value: question.value,
+    });
+    wrapper.value.push({
+      isAi: true,
+      value: "|",
+    });
   // const getPromt = await sendPrompt(1, question.value);
   console.log(question.value);
 
   const getPromt = await sendPrompt(1, question.value);
+  // rs.value = getPromt;
+
+    wrapper.value.pop();
+    wrapper.value.push({
+      isAi: true,
+      value: getPromt,
+    });
+
+    let newquestions = wrapper.value.filter((item) => {
+      return !item.isAi;
+    });
+    
+    // localStorage.setItem("threads", JSON.stringify(newquestions));
+
+    getQuestions();
+
+    loading.value = false;
+    question.value = "";
 
   console.log(getPromt);
 };
@@ -128,6 +157,7 @@ const getAnswer = async (message) => {
                 class="m-0 w-full h-full resize-none border-0 bg-transparent p-0 pl-2 pr-7 focus:ring-0 focus-visible:ring-0 focus-visible:outline-0 dark:bg-transparent md:pl-0"
                 rows="1"
                 cols="1"
+                :disabled="loading"
                 @keyup.enter="getAnswer"
                 placeholder="Ask anything..."
                 v-model="question"
