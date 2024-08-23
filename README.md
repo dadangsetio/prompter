@@ -1,7 +1,47 @@
 # `prompter`
 
-Welcome to your new `prompter` project and to the Internet Computer development community. By default, creating a new project adds this README and some template files to your project directory. You can edit these template files to customize your project and to include your own code to speed up the development cycle.
+Designed to facilitate dynamic conversations using advanced AI algorithms. Leverages the capabilities of Internet Computer (ICP) to ensure scalability and speed, making it a robust tool for various applications in customer service and personal assistance.
 
+We on track ###Fully on-chain dapps
+
+We Are:
+- [Syaifudin](https://github.com/syaifudin21) / @syaifudin21
+- [Galileo](https://github.com/otwtajir) / @otwtajir
+- [Dadang](https://github.com/dadangsetio) / @dadangsetio 
+
+
+## What We Have Learned
+
+During the development of the `prompter` project, we have gained valuable insights:
+
+1. Developing decentralized applications (dApps) using the Internet Computer Protocol (ICP).
+2. Integrating advanced AI into blockchain applications.
+3. Utilizing Motoko for smart contract development.
+4. Managing state and inter-canister interactions within the ICP ecosystem.
+5. Implementing an NFT system for conversation topics.
+
+## Challenges We Faced
+
+Some key challenges we encountered during development:
+
+1. Balancing performance and computational costs when integrating AI with blockchain.
+2. Managing complex application state across multiple canisters.
+3. Implementing robust security measures to protect user data and conversation integrity.
+4. Optimizing cycle usage to maintain cost-efficient operations.
+5. Designing an intuitive user interface for AI interactions in a blockchain context.
+
+## What We're Proud Of
+
+We take great pride in several achievements in this project:
+
+1. Successfully integrating advanced AI with blockchain technology, creating a unique and secure conversational experience.
+2. Implementing an NFT system for conversation topics, adding value and ownership for users.
+3. Creating a scalable and efficient architecture, allowing for future growth.
+4. Developing a fully on-chain solution, demonstrating the full potential of the Internet Computer.
+5. Collaborating effectively as a team, combining our expertise to create an innovative product.
+
+
+## Get Started
 To get started, you might want to explore the project directory structure and the default configuration file. Working with this project in your development environment will not affect any production deployment or identity tokens.
 
 To learn more before you start working with `prompter`, see the following documentation available online:
